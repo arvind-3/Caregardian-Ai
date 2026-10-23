@@ -1,0 +1,6 @@
+{
+  "name": "CareGuardian AI",
+  "description": "AI Elderly Care, Medication Monitoring & Voice Companion with Hindi/Hinglish reminders, caregiver dashboard, and health tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,1832 @@
+# CAREGUARDIAN AI — FULL WORKING APPLICATION BUILD PROMPT
+
+Build a complete, runnable full-stack application called **CareGuardian AI — AI Elderly Care, Medication Monitoring & Voice Companion**.
+
+This is a working prototype/MVP, not a static UI mockup.
+
+The application must run locally and demonstrate the complete patient → AI → medication → caregiver workflow.
+
+---
+
+## 1. PRODUCT VISION
+
+CareGuardian AI is an elderly-care assistant designed for families where an elderly person may need regular medication reminders, daily health check-ins, voice interaction, and caregiver monitoring.
+
+The elderly user should not need to repeatedly open complicated menus.
+
+At medication time, the application should actively notify the patient and open/show the medication assistant when technically possible.
+
+The AI should address the patient by their preferred name.
+
+Example:
+
+**"Namaste Ravi ji, aapki dawai lene ka time ho gaya hai. Kya aapne dawai le li?"**
+
+The patient can answer naturally:
+
+**"Haan beta, maine le li."**
+
+The system understands the response, records it, updates the medication event, and notifies the caregiver.
+
+The patient can also voluntarily start a conversation:
+
+**"Mujhe CareGuardian se baat karni hai."**
+
+The AI should then have a natural Hindi/Hinglish voice conversation.
+
+---
+
+# 2. IMPORTANT PROTOTYPE REQUIREMENT
+
+Everything must work in DEMO MODE without requiring paid external services.
+
+Create a clearly marked:
+
+**DEMO MODE**
+
+In demo mode:
+
+- Simulate notifications.
+- Simulate medication timing.
+- Simulate voice calls.
+- Allow microphone input if browser/device permissions are available.
+- Provide a text fallback if microphone/STT is unavailable.
+- Simulate caregiver notifications inside the dashboard.
+- Simulate AI responses when an external LLM API key is not configured.
+- Never pretend a real phone call or SMS was sent if it was only simulated.
+
+Create an `.env.example` file for optional real integrations.
+
+---
+
+# 3. TECHNOLOGY STACK
+
+Use:
+
+### Patient application
+React Native + Expo
+
+### Caregiver/Admin web application
+React + Vite
+
+### Backend
+Python + FastAPI
+
+### Database
+PostgreSQL
+
+### ORM
+SQLAlchemy
+
+### Validation
+Pydantic
+
+### Authentication
+JWT + secure password hashing
+
+### AI
+LLM API through a backend AI service abstraction
+
+### Speech
+Speech-to-Text service abstraction
+
+### Voice
+Text-to-Speech service abstraction
+
+### Notifications
+Notification service abstraction
+
+### Scheduling
+APScheduler for local development
+
+### File storage
+Local storage in development with an abstraction that can later use Amazon S3
+
+### Charts
+Recharts or an equivalent React chart library
+
+Use TypeScript for the React frontend.
+
+Use clean modular architecture.
+
+---
+
+# 4. PROJECT STRUCTURE
+
+Create this structure:
+
+```text
+careguardian-ai/
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   │
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── routers/
+│   │   ├── services/
+│   │   ├── ai/
+│   │   ├── scheduler/
+│   │   ├── notifications/
+│   │   ├── voice/
+│   │   └── utils/
+│   │
+│   ├── tests/
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── patient-app/
+│   ├── src/
+│   │   ├── screens/
+│   │   ├── components/
+│   │   ├── navigation/
+│   │   ├── services/
+│   │   ├── hooks/
+│   │   ├── context/
+│   │   └── utils/
+│   ├── app.json
+│   └── package.json
+│
+├── caregiver-web/
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── hooks/
+│   │   ├── context/
+│   │   └── utils/
+│   └── package.json
+│
+├── storage/
+│   ├── audio/
+│   └── reports/
+│
+├── docker-compose.yml
+├── README.md
+└── .env.example
+```
+
+---
+
+# 5. DATABASE
+
+Create PostgreSQL models/tables:
+
+```text
+users
+patients
+caregivers
+patient_caregiver_relationships
+medical_conditions
+allergies
+emergency_contacts
+medications
+medication_schedules
+medication_events
+health_checkins
+symptoms
+notifications
+ai_conversations
+ai_messages
+audio_records
+health_reports
+audit_logs
+```
+
+Use UUID primary keys.
+
+Include:
+
+- created_at
+- updated_at
+- appropriate foreign keys
+- indexes where useful
+- cascading rules where appropriate
+
+Never store passwords as plaintext.
+
+---
+
+# 6. AUTHENTICATION
+
+Implement:
+
+### Patient
+
+Register/login.
+
+### Caregiver
+
+Register/login.
+
+### Admin
+
+Admin login.
+
+Use JWT authentication.
+
+Implement role-based access:
+
+```text
+PATIENT
+CAREGIVER
+ADMIN
+```
+
+A patient can only access their own information.
+
+A caregiver can only access patients explicitly connected to them.
+
+Admin can manage system-level information.
+
+Protect all sensitive endpoints.
+
+---
+
+# 7. PATIENT REGISTRATION
+
+Create a simple elderly-friendly registration form.
+
+Fields:
+
+```text
+Full Name
+Date of Birth
+Gender
+Phone
+Email
+Address
+Preferred Language
+Preferred Name
+Existing Conditions
+Allergies
+Caregiver Name
+Caregiver Phone
+Caregiver Email
+Emergency Contact
+Emergency Phone
+```
+
+Allow the patient to choose how the AI addresses them.
+
+Examples:
+
+```text
+Ravi ji
+Papa
+Mummy ji
+Mr. Sharma
+Ravi
+```
+
+Default language:
+
+**Hindi/Hinglish**
+
+---
+
+# 8. PATIENT DASHBOARD
+
+Create a very simple elderly-friendly dashboard.
+
+Large buttons:
+
+```text
+💊 My Medicines
+
+🎙 Talk to CareGuardian
+
+❤️ How Am I Feeling?
+
+📅 Today's Schedule
+
+📊 My Health
+
+🚨 Emergency Help
+```
+
+Display:
+
+```text
+Good Morning, Ravi ji
+
+Next medicine:
+Medicine A
+08:00 AM
+
+Today's adherence:
+92%
+```
+
+Use large typography and high contrast.
+
+---
+
+# 9. MEDICATION MANAGEMENT
+
+Authorized caregiver/admin should be able to add medication.
+
+Fields:
+
+```text
+Medicine name
+Dosage
+Frequency
+Time
+Start date
+End date
+Instructions
+Doctor name
+Notes
+```
+
+Example:
+
+```text
+Medicine A
+1 tablet
+Daily
+08:00 AM
+```
+
+The system must NOT use AI to invent prescriptions.
+
+Medication information comes from an authorized person/prescription.
+
+---
+
+# 10. MEDICATION SCHEDULER
+
+Create a reliable medication scheduler.
+
+Every minute:
+
+```text
+Check medication schedules
+        ↓
+Find due medications
+        ↓
+Create medication event
+        ↓
+Prevent duplicate event
+        ↓
+Send patient reminder
+```
+
+Use idempotency so restarting the server does not create duplicate reminders.
+
+Store timezone-aware timestamps.
+
+---
+
+# 11. MEDICATION REMINDER
+
+At the scheduled time show a prominent patient notification/reminder.
+
+Example:
+
+```text
+💊 Medicine Time
+
+Namaste Ravi ji.
+
+Aapki Medicine A lene ka time ho gaya hai.
+
+Kya aapne dawai le li?
+
+[ YES, I TOOK IT ]
+
+[ NO ]
+
+[ LATER ]
+
+[ TALK TO AI ]
+```
+
+On supported mobile environments, request notification permission and use local/push notifications.
+
+For the prototype, if automatic OS notification/opening is restricted by the platform, provide a clear demo simulation.
+
+Do not claim the app can force-open another application or bypass OS restrictions.
+
+---
+
+# 12. VOICE MEDICATION CONFIRMATION
+
+When medication time arrives, allow:
+
+```text
+🎙 Speak
+```
+
+Patient can say:
+
+```text
+"Haan beta maine le li."
+```
+
+or:
+
+```text
+"Nahi abhi nahi li."
+```
+
+or:
+
+```text
+"Thodi der baad lunga."
+```
+
+Process:
+
+```text
+Voice
+ ↓
+Speech-to-Text
+ ↓
+AI intent extraction
+ ↓
+Backend validation
+ ↓
+Medication event update
+```
+
+Supported intents:
+
+```text
+MEDICATION_TAKEN
+MEDICATION_MISSED
+MEDICATION_DELAYED
+UNCLEAR
+REQUEST_HELP
+```
+
+---
+
+# 13. AI STRUCTURED RESPONSE
+
+The LLM should return structured JSON.
+
+Example:
+
+```json
+{
+  "intent": "MEDICATION_TAKEN",
+  "status": "TAKEN",
+  "confidence": 0.96,
+  "requires_clarification": false
+}
+```
+
+The backend validates this response.
+
+The LLM must NEVER directly update the database.
+
+The backend decides whether the requested action is allowed.
+
+If confidence is low:
+
+```text
+"Ravi ji, mujhe thoda clearly nahi samajh aaya.
+Kya aapne dawai le li hai?"
+```
+
+---
+
+# 14. MEDICATION STATES
+
+Implement:
+
+```text
+SCHEDULED
+TAKEN
+MISSED
+DELAYED
+UNCLEAR
+NO_RESPONSE
+```
+
+Each event must record:
+
+```text
+patient_id
+medication_id
+scheduled_time
+response_time
+status
+source
+confidence
+notes
+```
+
+---
+
+# 15. CAREGIVER NOTIFICATIONS
+
+Create an in-app notification center.
+
+When medication is taken:
+
+```text
+✅ Medication Update
+
+Ravi ji has taken Medicine A.
+
+08:04 AM
+```
+
+When missed:
+
+```text
+⚠️ Medication Alert
+
+Ravi ji has not confirmed Medicine A.
+
+Please check on the patient.
+```
+
+When no response:
+
+```text
+🚨 Patient Check Required
+
+Ravi ji did not respond to the medication reminder.
+
+Please contact the patient.
+```
+
+For the prototype, show these notifications in the caregiver dashboard.
+
+---
+
+# 16. NO RESPONSE ESCALATION
+
+Implement:
+
+```text
+Medication due
+      ↓
+First reminder
+      ↓
+Wait configured period
+      ↓
+No response?
+      ↓
+Second reminder
+      ↓
+Wait configured period
+      ↓
+Still no response?
+      ↓
+NO_RESPONSE
+      ↓
+Caregiver alert
+```
+
+Make these intervals configurable for demo mode.
+
+Example:
+
+```text
+First reminder: immediately
+Second reminder: 30 seconds
+Caregiver alert: 60 seconds
+```
+
+Do not provide medical advice about taking an extra dose.
+
+---
+
+# 17. DAILY HEALTH CHECK
+
+Create an automated daily check-in.
+
+Example:
+
+```text
+Namaste Ravi ji.
+
+Aaj aap kaise feel kar rahe hain?
+```
+
+Ask:
+
+```text
+How are you feeling?
+How was your sleep?
+How is your energy?
+Any unusual symptoms?
+Do you need help?
+```
+
+Allow voice or text responses.
+
+Store structured data.
+
+Example:
+
+```json
+{
+  "mood": "GOOD",
+  "sleep": "NORMAL",
+  "energy": "MEDIUM",
+  "symptoms": [],
+  "notes": ""
+}
+```
+
+---
+
+# 18. NATURAL AI COMPANION
+
+Create:
+
+**Talk to CareGuardian**
+
+The patient can start a conversation anytime.
+
+Example:
+
+Patient:
+
+```text
+"Beta, mujhe tumse thodi baat karni hai."
+```
+
+AI:
+
+```text
+"Ji Ravi ji, bilkul.
+Aap bataiye, aaj kya baat karni hai?"
+```
+
+Support:
+
+- Hindi
+- Hinglish
+- English
+
+The assistant should be:
+
+- respectful
+- calm
+- patient
+- friendly
+- concise
+- elderly-friendly
+
+The AI should remember the current conversation context.
+
+---
+
+# 19. VOICE CONVERSATION
+
+Implement:
+
+```text
+Microphone
+ ↓
+Speech-to-Text
+ ↓
+Conversation Manager
+ ↓
+LLM
+ ↓
+Response
+ ↓
+Text-to-Speech
+ ↓
+Speaker
+```
+
+Create a large microphone interface:
+
+```text
+🎙
+Listening...
+```
+
+Show:
+
+```text
+You:
+"Haan beta, aaj thoda weakness hai."
+
+CareGuardian:
+"Samajh gaya Ravi ji.
+Maine aapki baat note kar li hai."
+```
+
+Provide a text fallback.
+
+---
+
+# 20. VOICE RECORDING
+
+With explicit user consent:
+
+```text
+Start conversation
+      ↓
+Record audio
+      ↓
+Generate transcript
+      ↓
+Save audio
+      ↓
+Save transcript
+      ↓
+Generate summary
+      ↓
+Store metadata
+```
+
+Allow the caregiver to view authorized conversation summaries.
+
+Do not expose recordings to unauthorized users.
+
+Create:
+
+```text
+audio_records
+```
+
+with:
+
+```text
+conversation_id
+file_path
+duration
+consent_status
+created_at
+```
+
+---
+
+# 21. NIGHT ROUTINE
+
+Implement a configurable night routine.
+
+Default:
+
+**9:00 PM**
+
+After the final configured medication/routine:
+
+AI says:
+
+```text
+"Ravi ji, aaj ki routine complete ho gayi.
+
+Ab aap aaram kijiye.
+
+Good night Ravi ji.
+Achhi neend aaye.
+
+Kal subah phir milte hain."
+```
+
+Do not imply the AI is a human.
+
+Allow caregiver to enable/disable the routine.
+
+---
+
+# 22. AI HEALTH OBSERVATION
+
+If patient says:
+
+```text
+"Mujhe aaj chakkar aa rahe hain."
+```
+
+AI should record:
+
+```json
+{
+  "symptom": "dizziness",
+  "severity": "unknown",
+  "requires_attention": true
+}
+```
+
+AI response:
+
+```text
+"Thank you Ravi ji.
+Maine aapki baat record kar li hai.
+Main aapke caregiver ko inform karunga."
+```
+
+The AI must NOT diagnose the cause.
+
+---
+
+# 23. EMERGENCY DETECTION
+
+If the patient says something like:
+
+```text
+"Mujhe saans lene mein bahut dikkat ho rahi hai."
+
+or
+
+"Bahut tez chest pain hai."
+```
+
+Trigger the configured emergency workflow.
+
+Display:
+
+```text
+⚠️ Possible Emergency
+
+Please seek immediate professional/emergency medical assistance.
+
+[ CALL EMERGENCY SERVICE ]
+
+[ CALL CAREGIVER ]
+
+[ CANCEL ]
+```
+
+Only claim that a call was made if the application actually made the call.
+
+Never diagnose.
+
+Never claim certainty.
+
+---
+
+# 24. MEDICATION INFORMATION ASSISTANT
+
+The AI may explain an existing authorized prescription.
+
+Example:
+
+Patient:
+
+```text
+"Ye tablet kab leni hai?"
+```
+
+If the database contains:
+
+```text
+Medicine A
+08:00 AM
+1 tablet
+```
+
+AI says:
+
+```text
+"Ravi ji, aapke saved medication schedule ke according
+Medicine A subah 8 baje leni hai."
+```
+
+Do not invent missing information.
+
+If information is unavailable:
+
+```text
+"Mujhe is medicine ki timing confirm nahi hai.
+Please apne caregiver ya doctor se confirm kijiye."
+```
+
+---
+
+# 25. MEDICATION SUGGESTION SAFETY
+
+Do NOT implement autonomous prescribing.
+
+If patient asks:
+
+```text
+"Headache ke liye kaunsi medicine loon?"
+```
+
+AI responds:
+
+```text
+"Ravi ji, main aapke liye medicine prescribe nahi kar sakta.
+Main aapki problem record karke caregiver ya doctor ko inform kar sakta hoon."
+```
+
+Provide:
+
+```text
+[ Notify Caregiver ]
+[ Request Medical Review ]
+```
+
+If a future clinician module exists, recommendations can be reviewed and approved by an authorized clinician before becoming part of the medication schedule.
+
+---
+
+# 26. CAREGIVER DASHBOARD
+
+Create a professional dashboard.
+
+Top cards:
+
+```text
+Total Patients
+Today's Medication Adherence
+Pending Alerts
+Health Check-ins
+```
+
+Patient card:
+
+```text
+Ravi Sharma
+Age: 72
+
+Status: Stable
+
+Medication adherence:
+92%
+
+Last check-in:
+10 minutes ago
+
+Alerts:
+1
+```
+
+Actions:
+
+```text
+View Patient
+Medication
+Health
+Reports
+Conversations
+Alerts
+```
+
+---
+
+# 27. PATIENT DETAIL PAGE
+
+Display:
+
+```text
+Patient profile
+Medication schedule
+Medication adherence
+Today's events
+Health check-ins
+Symptoms
+AI conversation summaries
+Alerts
+Reports
+```
+
+Charts:
+
+```text
+Medication adherence
+Mood
+Sleep
+Energy
+```
+
+---
+
+# 28. REPORT GENERATION
+
+Generate daily report:
+
+```text
+CAREGUARDIAN DAILY REPORT
+
+Patient: Ravi Sharma
+Date: 22 October 2026
+
+Medication adherence: 92%
+
+Medicines:
+✓ Morning — Taken
+✓ Afternoon — Taken
+⚠ Evening — Not confirmed
+
+Mood:
+Good
+
+Sleep:
+Normal
+
+Energy:
+Medium
+
+Reported symptoms:
+Mild dizziness
+
+Important:
+One medication was not confirmed.
+Patient reported dizziness.
+
+Caregiver action:
+Please check on the patient.
+```
+
+Generate weekly report with:
+
+- adherence percentage
+- missed events
+- delayed events
+- no-response events
+- mood trend
+- sleep trend
+- energy trend
+- symptom history
+- check-in frequency
+
+Do not claim medical improvement unless supported by defined measurable metrics.
+
+---
+
+# 29. REPORT EXPORT
+
+Allow caregiver to:
+
+```text
+View Report
+Download PDF
+```
+
+Store generated reports in local storage during development.
+
+Create an abstraction for S3 later.
+
+---
+
+# 30. CAREGIVER ALERT CENTER
+
+Create alert categories:
+
+```text
+MEDICATION_MISSED
+NO_RESPONSE
+SYMPTOM_REPORTED
+POSSIBLE_EMERGENCY
+SYSTEM_ALERT
+```
+
+Allow:
+
+```text
+Mark as read
+Acknowledge
+View patient
+Call caregiver/patient
+```
+
+---
+
+# 31. AI VOICE CALL PROTOTYPE
+
+Create a **Simulated AI Call** feature.
+
+Caregiver can click:
+
+**Start AI Call**
+
+The interface should display:
+
+```text
+📞 CareGuardian AI
+Calling Ravi Sharma...
+
+Connected
+
+AI:
+"Namaste Ravi ji..."
+```
+
+Then simulate:
+
+```text
+AI voice
+ ↓
+Patient response
+ ↓
+STT
+ ↓
+LLM
+ ↓
+AI response
+ ↓
+Conversation recording
+```
+
+Clearly label:
+
+**SIMULATED CALL — DEMO MODE**
+
+Do not fake a real telephone connection.
+
+Create a service interface so a real telephony provider can be integrated later.
+
+---
+
+# 32. REAL VOICE CALL ARCHITECTURE
+
+Prepare interfaces for future integration:
+
+```text
+VoiceCallService
+NotificationService
+SpeechService
+AIService
+StorageService
+```
+
+The application should be designed so real providers can replace the demo implementations without rewriting the entire application.
+
+---
+
+# 33. AI SERVICE ARCHITECTURE
+
+Create:
+
+```text
+AIService
+├── analyzeMedicationResponse()
+├── analyzeHealthResponse()
+├── generateConversationResponse()
+├── generateConversationSummary()
+└── generateDailyReport()
+```
+
+Never put API keys in frontend code.
+
+All AI API calls must go through FastAPI.
+
+---
+
+# 34. CONVERSATION MANAGEMENT
+
+Create:
+
+```text
+Conversation
+ ├── patient
+ ├── start_time
+ ├── end_time
+ ├── language
+ ├── transcript
+ ├── summary
+ ├── detected_symptoms
+ └── alerts
+```
+
+Messages:
+
+```text
+USER
+ASSISTANT
+```
+
+---
+
+# 35. UI DESIGN
+
+Make the patient app:
+
+- extremely simple
+- elderly-friendly
+- large buttons
+- large fonts
+- high contrast
+- minimal navigation
+- clear icons
+- voice-first
+- responsive
+
+Primary patient screen should have:
+
+```text
+Good Morning Ravi ji ❤️
+
+Next Medicine
+━━━━━━━━━━━━
+Medicine A
+08:00 AM
+
+[ 💊 TAKE MEDICINE ]
+
+[ 🎙 TALK TO CAREGUARDIAN ]
+
+[ ❤️ HEALTH CHECK ]
+
+[ 🚨 EMERGENCY HELP ]
+```
+
+Caregiver UI should look like a modern healthcare SaaS dashboard.
+
+Use:
+
+- cards
+- charts
+- clean tables
+- status badges
+- alerts
+- responsive layout
+
+---
+
+# 36. DEMO ACCOUNT
+
+Automatically provide seed/demo accounts.
+
+Patient:
+
+```text
+Email:
+patient@careguardian.demo
+
+Password:
+Demo@123
+```
+
+Caregiver:
+
+```text
+Email:
+caregiver@careguardian.demo
+
+Password:
+Demo@123
+```
+
+Admin:
+
+```text
+Email:
+admin@careguardian.demo
+
+Password:
+Demo@123
+```
+
+Clearly mark these as DEMO accounts.
+
+Seed:
+
+```text
+Patient: Ravi Sharma
+Age: 72
+Language: Hindi/Hinglish
+
+Medicine A
+08:00 AM
+
+Medicine B
+01:00 PM
+
+Medicine C
+08:00 PM
+```
+
+---
+
+# 37. DEMO SIMULATION CONTROLS
+
+Create a developer/demo panel.
+
+Allow:
+
+```text
+Trigger Medication Reminder
+Simulate TAKEN
+Simulate MISSED
+Simulate DELAYED
+Simulate NO RESPONSE
+Trigger Health Check
+Simulate Symptom
+Start AI Conversation
+Simulate Voice Call
+Generate Daily Report
+Generate Weekly Report
+```
+
+This is important for project presentation.
+
+The entire system should be demonstrable in a few minutes.
+
+---
+
+# 38. TESTING
+
+Create backend tests for:
+
+- registration
+- login
+- authorization
+- medication creation
+- medication scheduling
+- medication event creation
+- duplicate prevention
+- TAKEN status
+- MISSED status
+- DELAYED status
+- NO_RESPONSE status
+- caregiver notification
+- health check
+- AI response validation
+
+Create frontend tests for important components.
+
+---
+
+# 39. ERROR HANDLING
+
+The application must not crash because:
+
+- AI API is unavailable
+- STT fails
+- TTS fails
+- notification fails
+- database temporarily fails
+- microphone permission is denied
+
+Provide graceful fallback.
+
+Example:
+
+If voice fails:
+
+```text
+"Voice service is currently unavailable."
+
+[ Type Response Instead ]
+```
+
+---
+
+# 40. SECURITY
+
+Implement:
+
+- Password hashing
+- JWT authentication
+- RBAC
+- Input validation
+- CORS configuration
+- Environment variables
+- Secure API design
+- Audit logging
+- Access control
+- Consent tracking
+- Protected audio files
+- No medical information in ordinary logs
+
+Never hardcode secrets.
+
+Create `.env.example`.
+
+---
+
+# 41. PRIVACY
+
+Treat health information as sensitive.
+
+Implement consent for:
+
+- voice recording
+- AI conversation recording
+- caregiver access
+- notifications
+
+Allow future:
+
+```text
+Delete my data
+Export my data
+Revoke recording consent
+```
+
+---
+
+# 42. AWS-READY DESIGN
+
+Do NOT require AWS for local development.
+
+Create clean abstractions so deployment can later use:
+
+```text
+React / React Native
+        ↓
+AWS hosting
+
+FastAPI
+        ↓
+AWS ECS/EC2
+
+PostgreSQL
+        ↓
+Amazon RDS
+
+Audio/Reports
+        ↓
+Amazon S3
+
+Scheduled jobs
+        ↓
+EventBridge + Lambda
+
+Monitoring
+        ↓
+CloudWatch
+```
+
+Keep the application fully runnable locally first.
+
+---
+
+# 43. API ENDPOINTS
+
+Implement at minimum:
+
+```text
+POST /auth/register
+POST /auth/login
+GET /auth/me
+
+GET /patients/me
+PUT /patients/me
+
+POST /caregivers
+GET /caregivers
+
+POST /medications
+GET /medications
+PUT /medications/{id}
+DELETE /medications/{id}
+
+POST /medication-events
+GET /medication-events
+
+POST /health-checkins
+GET /health-checkins
+
+POST /ai/message
+POST /ai/medication-response
+POST /ai/conversation/start
+POST /ai/conversation/end
+
+GET /notifications
+PUT /notifications/{id}/read
+
+GET /reports/daily
+GET /reports/weekly
+
+POST /demo/trigger-reminder
+POST /demo/simulate-response
+POST /demo/simulate-call
+```
+
+Add proper authorization to every endpoint.
+
+---
+
+# 44. BACKEND BUSINESS LOGIC
+
+Medication flow must be controlled by backend rules:
+
+```text
+Scheduled
+   ↓
+Reminder
+   ↓
+Patient Response
+   ↓
+Backend validates response
+   ↓
+Update medication event
+   ↓
+Create notification
+   ↓
+Notify caregiver if required
+```
+
+Never let frontend directly set:
+
+```text
+TAKEN
+MISSED
+NO_RESPONSE
+```
+
+without backend validation.
+
+---
+
+# 45. AI SAFETY
+
+The AI must NEVER:
+
+- diagnose
+- prescribe independently
+- change dosage
+- change medication
+- recommend double dosing
+- tell a patient to stop medication
+- pretend to be a doctor
+- pretend a real call happened when it did not
+- claim emergency services were contacted unless actually done
+
+The AI should instead:
+
+- remind
+- listen
+- record
+- summarize
+- explain existing authorized information
+- detect possible concerns
+- escalate to caregiver/clinician
+- encourage professional help when appropriate
+
+---
+
+# 46. README
+
+Create a complete README containing:
+
+```text
+Project overview
+Features
+Architecture
+Technology stack
+Folder structure
+Requirements
+Installation
+Environment variables
+Database setup
+Backend startup
+Frontend startup
+Demo accounts
+Demo workflow
+Testing
+Deployment
+AWS architecture
+Future improvements
+Medical safety limitations
+```
+
+Include exact commands.
+
+Example:
+
+```bash
+docker-compose up -d
+```
+
+Then backend:
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Frontend:
+
+```bash
+cd caregiver-web
+npm install
+npm run dev
+```
+
+Patient:
+
+```bash
+cd patient-app
+npm install
+npx expo start
+```
+
+---
+
+# 47. DO NOT BUILD A FAKE UI
+
+The following must actually connect:
+
+```text
+Login
+ ↓
+Backend
+ ↓
+Database
+
+Medication creation
+ ↓
+Database
+
+Medication schedule
+ ↓
+Scheduler
+
+Scheduler
+ ↓
+Medication event
+
+Medication event
+ ↓
+Patient notification
+
+Patient response
+ ↓
+AI/service
+ ↓
+Backend
+
+Backend
+ ↓
+Database
+
+Database
+ ↓
+Caregiver dashboard
+
+Caregiver dashboard
+ ↓
+Reports/alerts
+```
+
+Do not create buttons that only display fake success messages.
+
+Every implemented button should either perform a real operation or be explicitly marked:
+
+**DEMO / SIMULATED**
+
+---
+
+# 48. DEVELOPMENT ORDER
+
+Build in this exact order:
+
+### STEP 1
+Project setup + Docker + PostgreSQL
+
+### STEP 2
+Database models
+
+### STEP 3
+Authentication
+
+### STEP 4
+Patient profile
+
+### STEP 5
+Caregiver relationship
+
+### STEP 6
+Medication management
+
+### STEP 7
+Medication scheduler
+
+### STEP 8
+Medication event tracking
+
+### STEP 9
+Patient dashboard
+
+### STEP 10
+Caregiver dashboard
+
+### STEP 11
+Notifications
+
+### STEP 12
+AI text assistant
+
+### STEP 13
+AI medication intent detection
+
+### STEP 14
+Health check
+
+### STEP 15
+Reports
+
+### STEP 16
+Speech-to-text
+
+### STEP 17
+Text-to-speech
+
+### STEP 18
+Voice conversation
+
+### STEP 19
+Conversation recording
+
+### STEP 20
+Simulated AI calls
+
+### STEP 21
+Real telephony integration interface
+
+### STEP 22
+AWS-ready services
+
+### STEP 23
+Security hardening
+
+### STEP 24
+Testing
+
+---
+
+# 49. FINAL DEMO SCENARIO
+
+The application must support this complete demonstration:
+
+1. Login as caregiver.
+2. Show Ravi Sharma as a patient.
+3. Show medication schedule.
+4. Set a demo medication reminder for 30 seconds from now.
+5. Switch to patient interface.
+6. Reminder appears.
+7. AI says:
+
+**"Namaste Ravi ji, aapki dawai lene ka time ho gaya hai. Kya aapne dawai le li?"**
+
+8. Patient answers:
+
+**"Haan beta, maine le li."**
+
+9. Speech/text is processed.
+10. System records:
+
+```text
+TAKEN
+```
+
+11. Caregiver dashboard updates.
+12. Caregiver receives:
+
+**"Ravi ji has taken Medicine A."**
+
+13. Start AI conversation.
+14. Patient says:
+
+**"Aaj mujhe thoda chakkar aa raha hai."**
+
+15. AI records the symptom.
+16. Caregiver receives an alert.
+17. Generate daily report.
+18. Show medication adherence chart.
+19. Simulate a missed medication.
+20. Simulate no response.
+21. Show caregiver escalation.
+22. Start simulated AI voice call.
+23. Show conversation transcript.
+24. Finish the 9 PM routine:
+
+**"Good night Ravi ji. Ab aap aaram kijiye. Kal subah phir milte hain."**
+
+This entire workflow must be demonstrable without requiring paid external services.
+
+---
+
+# 50. FINAL REQUIREMENT
+
+Do not generate an enormous explanation before coding.
+
+Start implementing the project.
+
+First create:
+
+1. Complete folder structure
+2. Docker Compose
+3. PostgreSQL connection
+4. FastAPI application
+5. SQLAlchemy models
+6. Authentication
+7. React caregiver web application
+8. React Native patient application
+9. Seed/demo data
+
+Then continue module-by-module until the complete prototype is functional.
+
+For every module:
+
+- Create the files.
+- Write the code.
+- Connect it to existing modules.
+- Run/test it.
+- Fix errors.
+- Then continue.
+
+Never replace implementation with pseudocode when actual code is possible.
+
+The final result must be a **working CareGuardian AI prototype**, not merely a design, mockup, or collection of disconnected code snippets.
